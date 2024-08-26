@@ -99,5 +99,23 @@ namespace Serilog.Sinks.PersistentFile.Tests
                 Assert.True(size > maxBytes * 2);
             }
         }
+
+        [Fact]
+        public void NoExceptionIsThrownWhenLengthOfFormattedLogEventIsGreaterThanDefaultFileStreamBufferLength()
+        {
+            const int maxBytes = 5000;
+
+            using (var tmp = TempFolder.ForCaller())
+            {
+                var path = tmp.AllocateFilename("txt");
+                var evt = Some.LogEvent(new string('n', maxBytes));
+
+                using (var sink = new SharedFileSink(path, new JsonFormatter(), null))
+                {
+                    var exception = Record.Exception(() => sink.Emit(evt));
+                    Assert.Null(exception);
+                }
+            }
+        }
     }
 }
